@@ -6,14 +6,16 @@ import 'package:peluqueria/widgets/widgets.dart';
 class GestionPeluquerosScreen extends StatefulWidget {
   final UsuariosServices usuariosServices;
 
-  const GestionPeluquerosScreen({Key? key, required this.usuariosServices}) : super(key: key);
+  const GestionPeluquerosScreen({Key? key, required this.usuariosServices})
+      : super(key: key);
 
   @override
-  _GestionPeluquerosScreenState createState() => _GestionPeluquerosScreenState();
+  _GestionPeluquerosScreenState createState() =>
+      _GestionPeluquerosScreenState();
 }
 
 class _GestionPeluquerosScreenState extends State<GestionPeluquerosScreen> {
-  List<Usuario> userList = [];
+  Set<Usuario> userSet = {};
   List<Usuario> filteredUserList = [];
 
   @override
@@ -23,9 +25,10 @@ class _GestionPeluquerosScreenState extends State<GestionPeluquerosScreen> {
   }
 
   void loadUsuarios() async {
-    userList = await widget.usuariosServices.loadUsuarios();
+    List<Usuario> loadedUsers = await widget.usuariosServices.loadUsuarios();
     setState(() {
-      filteredUserList = userList;
+      userSet.addAll(loadedUsers);
+      filteredUserList = userSet.toList();
     });
   }
 
@@ -39,7 +42,7 @@ class _GestionPeluquerosScreenState extends State<GestionPeluquerosScreen> {
       ),
       endDrawer: const DefaultDrawer(selectedIndex: 2),
       body: ListView.builder(
-        itemCount: filteredUserList.length + 1, 
+        itemCount: filteredUserList.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
@@ -47,28 +50,31 @@ class _GestionPeluquerosScreenState extends State<GestionPeluquerosScreen> {
               child: TextField(
                 onChanged: (value) {
                   setState(() {
-                    filteredUserList = userList.where((user) => user.nombre.contains(value)).toList(); 
+                    filteredUserList = userSet.where((user) => user.nombre.contains(value)).toList();
                   });
                 },
                 decoration: const InputDecoration(
                   labelText: 'Buscar',
                   labelStyle: TextStyle(color: Colors.black87),
                   prefixIcon: Icon(Icons.search),
-                  fillColor: Colors.white54, 
-                  filled: true, 
+                  fillColor: Colors.white54,
+                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(15.0)),
-                    borderSide: BorderSide(color: Colors.black87), 
+                    borderSide: BorderSide(color: Colors.black87),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(15.0)),
-                    borderSide: BorderSide(color: Colors.black87), 
+                    borderSide: BorderSide(color: Colors.black87),
                   ),
                 ),
               ),
             );
           } else {
-            return UserCard(nombre: filteredUserList[index - 1].nombre, rol: filteredUserList[index - 1].rol, id: filteredUserList[index - 1].id); 
+            return UserCard(
+                nombre: filteredUserList[index - 1].nombre,
+                rol: filteredUserList[index - 1].rol,
+                id: filteredUserList[index - 1].id ?? "No ID");
           }
         },
       ),

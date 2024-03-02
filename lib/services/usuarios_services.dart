@@ -14,41 +14,45 @@ class UsuariosServices extends ChangeNotifier {
     return resp.body;
   }
 
-  Future<List<Usuario>> loadUsuarios() async {
-    notifyListeners();
+Future<List<Usuario>> loadUsuarios() async {
+  notifyListeners();
 
-    final url = Uri.https(_baseUrl, 'usuarios.json');
-    final resp = await http.get(url);
+  final url = Uri.https(_baseUrl, 'usuarios.json');
+  final resp = await http.get(url);
 
-    final Map<String, dynamic> usuariosMap = json.decode(resp.body);
+  final Map<String, dynamic> usuariosMap = json.decode(resp.body);
 
-      usuariosMap.forEach((key, value) {
-      final tempProduct = Usuario.fromJson(value);
-      tempProduct.id = key;
-      this.usuario.add(tempProduct);
-    });
+  this.usuario.clear();
 
-    return usuario;
+  usuariosMap.forEach((key, value) {
+    final tempUser = Usuario.fromJson(value);
+    tempUser.id = key;
+    this.usuario.add(tempUser);
+  });
+
+  return usuario;
+}
+
+
+  Future<Usuario?> getUsuarioByEmail(String email) async {
+    List<Usuario> users = await loadUsuarios();
+    return users.where((u) => u.email == email).firstOrNull;
   }
 
-    Future<String> updateUsuario(Usuario usuario) async {
-    final url = Uri.https( _baseUrl, 'usuarios/${ usuario.id }.json' );
-    final resp = await http.put( url, body: usuario.toJson() );
+  Future<String> updateUsuario(Usuario usuario) async {
+    final url = Uri.https(_baseUrl, 'usuarios/${usuario.id}.json');
+    final resp = await http.put(url, body: usuario.toJson());
     final decodedData = resp.body;
-
-    print( decodedData);
 
     return usuario.id!;
   }
 
   Future<String> updateUsuarioRol(String id, String nuevoRol) async {
-  final url = Uri.https(_baseUrl, 'usuarios/$id.json');
-  final resp = await http.patch(url, body: jsonEncode({'rol': nuevoRol}));
-  final decodedData = resp.body;
+    final url = Uri.https(_baseUrl, 'usuarios/$id.json');
 
-  print(decodedData);
+    final resp = await http.patch(url, body: jsonEncode({'rol': nuevoRol}));
+    final decodedData = resp.body;
 
-  return id;
-}
-
+    return id;
+  }
 }
